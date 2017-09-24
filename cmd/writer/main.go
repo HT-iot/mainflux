@@ -17,7 +17,7 @@ import (
 
 const (
 	sep         string = ","
-	subject     string = "msg.*"
+	subject     string = "normalizer.senml"
 	queue       string = "message_writers"
 	defCluster  string = "127.0.0.1"
 	defKeyspace string = "message_writer"
