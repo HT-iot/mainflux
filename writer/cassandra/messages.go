@@ -17,7 +17,9 @@ func NewMessageRepository(session *gocql.Session) writer.MessageRepository {
 	return &msgRepository{session}
 }
 
-func normalize(msg writer.RawMessage) ([]writer.Message, error) {
+// Normalize decodes and normalizes message emitted by the mainflux adapters layer
+// into Message structure. A non-nil error is returned to indicate operation failure.
+func Normalize(msg writer.RawMessage) ([]writer.Message, error) {
 	var (
 		rm, nm senml.SenML // raw and normalized message
 		err    error
@@ -35,7 +37,6 @@ func normalize(msg writer.RawMessage) ([]writer.Message, error) {
 			Channel:     msg.Channel,
 			Publisher:   msg.Publisher,
 			Protocol:    msg.Protocol,
-			Version:     v.BaseVersion,
 			Name:        v.Name,
 			Unit:        v.Unit,
 			StringValue: v.StringValue,
@@ -69,17 +70,17 @@ func (repo *msgRepository) Save(raw writer.RawMessage) error {
 		err  error
 	)
 
-	if msgs, err = normalize(raw); err != nil {
+	if msgs, err = Normalize(raw); err != nil {
 		return err
 	}
 
 	for _, msg := range msgs {
 		cql := `INSERT INTO messages_by_channel
-				(channel, id, publisher, protocol, bver, n, u, v, vs, vb, vd, s, t, ut, l)
-				VALUES (?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				(channel, id, publisher, protocol, n, u, v, vs, vb, vd, s, t, ut, l)
+				VALUES (?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 		err = repo.session.Query(cql, msg.Channel, msg.Publisher, msg.Protocol,
-			msg.Version, msg.Name, msg.Unit, msg.Value, msg.StringValue, msg.BoolValue,
+			msg.Name, msg.Unit, msg.Value, msg.StringValue, msg.BoolValue,
 			msg.DataValue, msg.ValueSum, msg.Time, msg.UpdateTime, msg.Link).Exec()
 
 		if err != nil {
