@@ -1,6 +1,7 @@
 package cassandra
 
 import (
+	"strings"
 	"github.com/cisco/senml"
 	"github.com/gocql/gocql"
 	"github.com/mainflux/mainflux/writer"
@@ -58,6 +59,10 @@ func Normalize(msg writer.RawMessage) ([]writer.Message, error) {
 			m.ValueSum = *v.Sum
 		}
 
+		if(msg.Protocol == "coap"){
+			m.Publisher = v.Name[0:strings.Index(v.Name, ":")]			
+		}
+		
 		msgs[k] = m
 	}
 

@@ -18,7 +18,7 @@ var tables []string = []string{
 		t double,
 		ut double,
 		l text,
-		PRIMARY KEY ((channel), id)
+		PRIMARY KEY ((publisher,t), id, channel)
 	) WITH CLUSTERING ORDER BY (id DESC)`,
 }
 
